@@ -35,11 +35,11 @@ if __name__ == '__main__':
 
     # get angles
     # with open(directory + '/final_test/test_data/Matrices/Angles_Optimized.2.csv') as f:  # '/final_test/test_data/Matrices/Angles_' + str(n) +'.0.csv'
-    with open(directory + '/final_test/test_data/Matrices/Angles_' + str(n) +'.0.csv') as f:
-        reader = csv.reader(f)
-        for j, row in enumerate(reader):
-            for i, col in enumerate(row):
-                angles[j][i] = float(col)
+    # with open(directory + '/final_test/test_data/Matrices/Angles_' + str(n) +'.0.csv') as f:
+    #     reader = csv.reader(f)
+    #     for j, row in enumerate(reader):
+    #         for i, col in enumerate(row):
+    #             angles[j][i] = float(col)
 
     arm_angles = angles[0]
     print(arm_angles)
