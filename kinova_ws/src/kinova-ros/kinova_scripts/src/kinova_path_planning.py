@@ -253,7 +253,7 @@ class MoveRobot():
 
 		while True:
 			try:
-				translation, rotation = listener.lookupTransform('world', 'target_tf', rospy.Time())
+				translation, rotation = listener.lookupTransform('world', 'goal_tf', rospy.Time())
 				print(translation)
 				break  # once the transform is obtained move on
 			except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
