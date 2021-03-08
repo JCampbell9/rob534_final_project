@@ -21,6 +21,9 @@ from std_msgs.msg import String
 from moveit_commander.conversions import pose_to_list
 from moveit_msgs.msg import RobotState, PlanningScene, PlanningSceneComponents, AllowedCollisionEntry, AllowedCollisionMatrix
 from moveit_msgs.srv import GetPlanningScene, ApplyPlanningScene
+
+from kinova_scripts.srv import Joint_angles, Joint_anglesResponse
+from kinova_scripts.srv import New_pose, New_poseResponse
 import time
 
 
@@ -60,6 +63,7 @@ class MoveRobot():
 			cyl_pose.pose.position.y = 0.25
 			cyl_pose.pose.position.z = 0.125
 			self.scene.add_cylinder('cylinder', cyl_pose, .25, 0.025)
+			obj_pose = (0, .25, .125/2)
 
 		elif self.env == 1:
 
@@ -69,7 +73,7 @@ class MoveRobot():
 			cyl_pose.pose.position.y = 0.5
 			cyl_pose.pose.position.z = 0.125
 			self.scene.add_cylinder('cylinder', cyl_pose, .25, 0.025)
-
+			obj_pose = (0, .5, .125/2)
 			# go around or over wall
 			wall_pose = PoseStamped()
 			wall_pose.header.frame_id = self.robot.get_planning_frame()
@@ -85,6 +89,7 @@ class MoveRobot():
 			cyl_pose.pose.position.x = 0.0
 			cyl_pose.pose.position.y = 0.75
 			cyl_pose.pose.position.z = 0.125
+			obj_pose = (0, .75, .125/2)
 			self.scene.add_cylinder('cylinder', cyl_pose, .25, 0.025)
 
 			wallL_pose = PoseStamped()
@@ -124,6 +129,10 @@ class MoveRobot():
 		self.get_scene = rospy.ServiceProxy('/get_planning_scene', GetPlanningScene)
 		rospy.sleep(2)
 
+		object_tf = tf.TransformBroadcaster()
+		rot = tf.transformations.quaternion_from_euler(pi/2, 0, 0)
+		object_tf.sendTransform(obj_pose, tuple(rot), rospy.Time.now(), 'object_frame', 'j2s7s300_link_base')
+
 		
 		# To see the trajectory
 		self.disp = moveit_msgs.msg.DisplayTrajectory()
@@ -134,7 +143,10 @@ class MoveRobot():
 
 		self.move_group.allow_replanning(1)
 
-		self.main()
+		self.joint_angles_service = rospy.Service('joint_angles', Joint_angles, self.joint_angles)
+		self.new_pose_service = rospy.Service('new_pose', New_pose, self.new_pose)
+
+		# self.main()
 	
 	def set_planner_type(self, planner_name):
 		if planner_name == "RRT":
@@ -203,30 +215,62 @@ class MoveRobot():
 		self.disp_pub.publish(self.disp)
 
 
-	def main(self):
+	def new_pose(self, request):
+		self.main(0, request.pose)
+		
+		return New_poseResponse(True)
+
+
+	def joint_angles(self, request):
+		"""calls the main() function giving it the desired joint angles"""
+		self.main(1, request.angles)
+
+		return Joint_anglesResponse(True)
+
+	def main(self, trig, goal):
 
 		# Set up path here
 
 		# Pick planner 
 		self.set_planner_type("RRT")
-		# self.set_planner_type("PRM*")
 
-		if self.env == 0:
-			self.go_to_goal([0.0, 0.25, 0.125, 270, 0, 179])
-
-		elif self.env == 1:
-			self.go_to_goal([0.0, 0.5, 0.125, 270, 0, 270])
-			
-		elif self.env == 2:
-			self.go_to_goal([0.0, 0.75, 0.125, 270, 0, 295])
-
-
+		if trig == 1:
 		# Draw a straight line in 90 deg
-		# env 2
-		# self.go_to_goal([0.0, 0.5, 0.125, 270, 0, 270])
+			rospy.loginfo('moving')
+			joint_radians = goal[:7]  # angles for the arm
+			finger_radians = goal[7:] # angles for the gripper this code currently doesn't work
 
-		# env 3
-		# self.go_to_goal([0.0, 0.75, 0.125, 270, 0, 295])		
+			self.go_to_joint_state(joint_radians)
+		
+		elif trig == 0:
+			self.go_to_goal(list(goal))
+
+	# def main(self):
+
+	# 	# Set up path here
+
+	# 	# Pick planner 
+	# 	self.set_planner_type("RRT")
+	# 	# self.set_planner_type("PRM*")
+
+	# 	# self.go_to_goal()
+
+	# 	# if self.env == 0:
+	# 	# 	self.go_to_goal([0.0, 0.25, 0.125, 270, 0, 179])
+
+	# 	# elif self.env == 1:
+	# 	# 	self.go_to_goal([0.0, 0.5, 0.125, 270, 0, 270])
+			
+	# 	# elif self.env == 2:
+	# 	# 	self.go_to_goal([0.0, 0.75, 0.125, 270, 0, 295])
+
+
+	# 	# Draw a straight line in 90 deg
+	# 	# env 2
+	# 	# self.go_to_goal([0.0, 0.5, 0.125, 270, 0, 270])
+
+	# 	# env 3
+	# 	# self.go_to_goal([0.0, 0.75, 0.125, 270, 0, 295])		
 
 
 
@@ -237,6 +281,5 @@ if __name__ == '__main__':
     print(" \n\n  env: {0} \n\n".format(world))
 
     MoveRobot(env=int(world))
-	
 	# rospy.spin()
 
