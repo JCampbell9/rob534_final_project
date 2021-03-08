@@ -255,34 +255,35 @@ class MoveRobot():
 
 		while True:
 			try:
-				translation, rotation = listener.lookupTransform('world', 'object_tf', rospy.Time()) #('world', 'goal_tf', rospy.Time())
+				translation, rotation = listener.lookupTransform('world', 'goal_tf', rospy.Time()) #('world', 'object_tf', rospy.Time())
 				print(translation)
 				break  # once the transform is obtained move on
 			except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
 				continue  # if it fails try again
 
-		dir_path = os.path.dirname(os.path.realpath(__file__))
-		file = open(dir_path + "/object_position.csv", "a")
-		wr = csv.writer(file, dialect='excel')
+		# dir_path = os.path.dirname(os.path.realpath(__file__))
+		# file = open(dir_path + "/object_position.csv", "a")
+		# wr = csv.writer(file, dialect='excel')
 
-		wr.writerow((translation + rotation))
-		file.close()
+		# wr.writerow((translation + rotation))
+		# file.close()
 
-		print('translation: {0} \n rotation: {1}'.format(translation, rotation))
+		# print('translation: {0} \n rotation: {1}'.format(translation, rotation))
 		# Pick planner 
-		# self.set_planner_type("RRT")
+		
+		self.set_planner_type("RRT")
 		# # self.set_planner_type("PRM*")
 
 		# # self.go_to_goal()
-		# angles = tf.transformations.euler_from_quaternion(rotation)
+		angles = tf.transformations.euler_from_quaternion(rotation)
 		# print(angles)
 
 
 		# # if self.env == 0:
-		# pose = [translation[0], translation[1], translation[2], angles[0], angles[1], angles[2]]
+		pose = [translation[0], translation[1], translation[2], angles[0], angles[1], angles[2]]
 		# # pose = [translation[0], translation[1], translation[2], rotation[0], rotation[1], rotation[2], rotation[3]]
 		# # print(pose)
-		# self.go_to_goal(pose)
+		self.go_to_goal(pose)
 
 	# 	# elif self.env == 1:
 		# self.go_to_goal([0.0, 0.5, 0.125, 270, 0, 270])
