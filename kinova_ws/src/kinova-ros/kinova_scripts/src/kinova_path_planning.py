@@ -143,7 +143,8 @@ class MoveRobot():
 		
 		self.rate = rospy.Rate(10)
 
-		self.move_group.allow_replanning(1)
+		self.move_group.allow_replanning(0)
+		# self.move_group.allow_replanning()
 
 		# self.joint_angles_service = rospy.Service('joint_angles', Joint_angles, self.joint_angles)
 		# self.new_pose_service = rospy.Service('new_pose', New_pose, self.new_pose)
@@ -193,7 +194,7 @@ class MoveRobot():
 			pose_goal.orientation.w = ee_pose[6]	
 
 		self.move_group.set_pose_target(pose_goal)
-		self.move_group.set_planning_time(20)
+		self.move_group.set_planning_time(1)
 		rospy.sleep(2)
 		print(self.move_group.go(wait=True))
 		self.move_group.stop()
