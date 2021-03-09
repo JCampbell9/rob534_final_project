@@ -17,7 +17,7 @@ import sys
 if __name__ == '__main__':
 
     ###################################################################################
-    # Creates the camera, world, and the aruco_end_effector frames to TF to be used later 
+    # Creates frames for the object and target pose 
     ###################################################################################
 
     rospy.init_node('object_frame_tf')
@@ -72,7 +72,7 @@ if __name__ == '__main__':
 
     #pose 9
     target_trans = (0.09808, .00654, -0.10785)
-    target_rot = (-2.79, 2.84, -1.37, -1.17)#, -2.79)
+    target_rot = (2.84, -1.37, -1.17, -2.79)
 
     # # pose 10
     # target_trans = (-0.05336, -0.0052, -.1382)

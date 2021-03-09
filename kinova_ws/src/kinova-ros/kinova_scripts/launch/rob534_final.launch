@@ -1,0 +1,13 @@
+<launch>
+    <arg name="env"/>
+    <arg name="object"/>
+    
+    <node pkg="kinova_scripts" name="object_frame_tf" type="object_frame.py" >
+    </node>
+    
+    <node pkg="kinova_scripts" name="move_kinova" type="kinova_path_planning.py" />
+
+    <param name="test_env" type="string" value="$(arg env)" />
+    <param name="test_object" type="string" value="$(arg object)" />
+
+</launch>

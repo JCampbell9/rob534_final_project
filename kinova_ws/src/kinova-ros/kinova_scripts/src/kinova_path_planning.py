@@ -49,71 +49,7 @@ class MoveRobot():
 		self.scene = moveit_commander.PlanningSceneInterface()
 		self.env = env
 		rospy.sleep(2)
-		table_pose = PoseStamped()
-		table_pose.header.frame_id = self.robot.get_planning_frame()
-		table_pose.pose.position.x = 0.
-		table_pose.pose.position.y = 0.
-		table_pose.pose.position.z = -0.0125
-		self.scene.add_box('table', table_pose, (1, 3, 0.025))
-
-
-
-		if self.env == 0:
-			cyl_pose = PoseStamped()
-			cyl_pose.header.frame_id = self.robot.get_planning_frame()
-			cyl_pose.pose.position.x = 0.0
-			cyl_pose.pose.position.y = 0.5
-			cyl_pose.pose.position.z = 0.125
-			self.scene.add_cylinder('cylinder', cyl_pose, .25, 0.025)
-			obj_pose = (0, .5, .125/2)
-
-		elif self.env == 1:
-
-			cyl_pose = PoseStamped()
-			cyl_pose.header.frame_id = self.robot.get_planning_frame()
-			cyl_pose.pose.position.x = 0.0
-			cyl_pose.pose.position.y = 0.5
-			cyl_pose.pose.position.z = 0.125
-			self.scene.add_cylinder('cylinder', cyl_pose, .25, 0.025)
-			obj_pose = (0, .5, .125/2)
-			# go around or over wall
-			wall_pose = PoseStamped()
-			wall_pose.header.frame_id = self.robot.get_planning_frame()
-			wall_pose.pose.position.x = 0.3
-			wall_pose.pose.position.y = 0.25
-			wall_pose.pose.position.z = 0.25
-			self.scene.add_box('wall', wall_pose, (1, 0.025, .5))
-
-		elif self.env == 2:
-
-			cyl_pose = PoseStamped()
-			cyl_pose.header.frame_id = self.robot.get_planning_frame()
-			cyl_pose.pose.position.x = 0.0
-			cyl_pose.pose.position.y = 0.75
-			cyl_pose.pose.position.z = 0.125
-			obj_pose = (0, .75, .125/2)
-			self.scene.add_cylinder('cylinder', cyl_pose, .25, 0.025)
-
-			wallL_pose = PoseStamped()
-			wallL_pose.header.frame_id = self.robot.get_planning_frame()
-			wallL_pose.pose.position.x = -0.45
-			wallL_pose.pose.position.y = 0.5
-			wallL_pose.pose.position.z = 0.5
-			self.scene.add_box('wallL', wallL_pose, (0.5, 0.025, 1))
-
-			wallR_pose = PoseStamped()
-			wallR_pose.header.frame_id = self.robot.get_planning_frame()
-			wallR_pose.pose.position.x = 0.45
-			wallR_pose.pose.position.y = 0.5
-			wallR_pose.pose.position.z = 0.5
-			self.scene.add_box('wallR', wallR_pose, (0.5, 0.025, 1))
-
-			wallT_pose = PoseStamped()
-			wallT_pose.header.frame_id = self.robot.get_planning_frame()
-			wallT_pose.pose.position.x = 0.0
-			wallT_pose.pose.position.y = 0.5
-			wallT_pose.pose.position.z = 1.
-			self.scene.add_box('wallT', wallT_pose, (0.5, 0.025, 1))
+		
 
 		
 		# Define the planning group for the arm you are using
@@ -250,6 +186,71 @@ class MoveRobot():
 	# 		self.go_to_goal(list(goal))
 
 	def main(self):
+		table_pose = PoseStamped()
+		table_pose.header.frame_id = self.robot.get_planning_frame()
+		table_pose.pose.position.x = 0.
+		table_pose.pose.position.y = 0.
+		table_pose.pose.position.z = -0.0125
+		self.scene.add_box('table', table_pose, (1, 3, 0.025))
+
+
+
+		if self.env == 0:
+			cyl_pose = PoseStamped()
+			cyl_pose.header.frame_id = self.robot.get_planning_frame()
+			cyl_pose.pose.position.x = 0.0
+			cyl_pose.pose.position.y = 0.5
+			cyl_pose.pose.position.z = 0.125
+			self.scene.add_cylinder('cylinder', cyl_pose, .25, 0.025)
+			obj_pose = (0, .5, .125/2)
+
+		elif self.env == 1:
+
+			cyl_pose = PoseStamped()
+			cyl_pose.header.frame_id = self.robot.get_planning_frame()
+			cyl_pose.pose.position.x = 0.0
+			cyl_pose.pose.position.y = 0.5
+			cyl_pose.pose.position.z = 0.125
+			self.scene.add_cylinder('cylinder', cyl_pose, .25, 0.025)
+			obj_pose = (0, .5, .125/2)
+			# go around or over wall
+			wall_pose = PoseStamped()
+			wall_pose.header.frame_id = self.robot.get_planning_frame()
+			wall_pose.pose.position.x = 0.3
+			wall_pose.pose.position.y = 0.25
+			wall_pose.pose.position.z = 0.25
+			self.scene.add_box('wall', wall_pose, (1, 0.025, .5))
+
+		elif self.env == 2:
+
+			cyl_pose = PoseStamped()
+			cyl_pose.header.frame_id = self.robot.get_planning_frame()
+			cyl_pose.pose.position.x = 0.0
+			cyl_pose.pose.position.y = 0.75
+			cyl_pose.pose.position.z = 0.125
+			obj_pose = (0, .75, .125/2)
+			self.scene.add_cylinder('cylinder', cyl_pose, .25, 0.025)
+
+			wallL_pose = PoseStamped()
+			wallL_pose.header.frame_id = self.robot.get_planning_frame()
+			wallL_pose.pose.position.x = -0.45
+			wallL_pose.pose.position.y = 0.5
+			wallL_pose.pose.position.z = 0.5
+			self.scene.add_box('wallL', wallL_pose, (0.5, 0.025, 1))
+
+			wallR_pose = PoseStamped()
+			wallR_pose.header.frame_id = self.robot.get_planning_frame()
+			wallR_pose.pose.position.x = 0.45
+			wallR_pose.pose.position.y = 0.5
+			wallR_pose.pose.position.z = 0.5
+			self.scene.add_box('wallR', wallR_pose, (0.5, 0.025, 1))
+
+			wallT_pose = PoseStamped()
+			wallT_pose.header.frame_id = self.robot.get_planning_frame()
+			wallT_pose.pose.position.x = 0.0
+			wallT_pose.pose.position.y = 0.5
+			wallT_pose.pose.position.z = 1.
+			self.scene.add_box('wallT', wallT_pose, (0.5, 0.025, 1))
 		
 		# Set up path here
 		listener = tf.TransformListener()
