@@ -195,7 +195,7 @@ class MoveRobot():
 		self.move_group.set_pose_target(pose_goal)
 		self.move_group.set_planning_time(20)
 		rospy.sleep(2)
-		self.move_group.go(wait=True)
+		print(self.move_group.go(wait=True))
 		self.move_group.stop()
 
 		self.move_group.clear_pose_targets()

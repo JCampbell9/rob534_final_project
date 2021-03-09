@@ -40,46 +40,46 @@ if __name__ == '__main__':
 
     # # pose 1
     # target_trans = (.11561, -0.06138, -0.02069)
-    # target_rot = (-3.79, 3.95, -1.92, 1.35)
+    # target_rot = (3.95, -1.92, 1.35, -3.79)
     
     # # pose 2
     # target_trans = (-.12196, -0.0827, .00854)
-    # target_rot = (-1.09, 1.32, -3.9, 3.01)
+    # target_rot = (1.32, -3.9, 3.01, -1.09)
     
     # # pose 3
     # target_trans = (-0.13351, -0.12192, -0.04306)
-    # target_rot = (-2.02, 0.69, -4.54, 4.01)
+    # target_rot = (0.69, -4.54, 4.01, -2.02)
 
     # # pose 4
     # target_trans = (.09369, -0.18366, -0.05956)
-    # target_rot = (-3.22, 3.81, -2.51, 0.77)
+    # target_rot = (3.81, -2.51, 0.77, -3.22)
 
     # # pose 5
     # target_trans = (-0.12057, -0.10617, 0.00928)
-    # target_rot = (-1.05, 1.37, -3.11, 3.66)
+    # target_rot = (1.37, -3.11, 3.66, -1.05)
 
     # # pose 6
     # target_trans = (0.10245, .09025, 0.09029)
-    # target_rot = (-3.17, 4.51, 2.37, 0.52)
+    # target_rot = (4.51, 2.37, 0.52, -3.17)
 
     # # pose 7
     # target_trans = (0.11042, -0.02369, -0.09094)
-    # target_rot = (-3.97, 4.18, -1.31, -1.39)
+    # target_rot = (4.18, -1.31, -1.39, -3.97)
 
     # # pose 8
     # target_trans = (0.12979, .07966, -0.06337)
-    # target_rot = (-4.31, 4.66, -0.56, -1.44)
+    # target_rot = (4.66, -0.56, -1.44, -4.31)
 
-    # #pose 9
-    # target_trans = (0.09808, .00654, -0.10785)
-    # target_rot = (-2.79, 2.84, -1.37, -1.17)
+    #pose 9
+    target_trans = (0.09808, .00654, -0.10785)
+    target_rot = (2.84, -1.37, -1.17, -2.79)
 
-    # pose 10
-    target_trans = (-0.05336, -0.0052, -.1382)
-    target_rot = (-1.97, 2.42, -3.21, -2.88)
+    # # pose 10
+    # target_trans = (-0.05336, -0.0052, -.1382)
+    # target_rot = (2.42, -3.21, -2.88, -1.97)
     
     # target_trans = (.09711, -.12544, -.037)
-    # target_rot = (-3.92, 2.92, -2.45, 1.94)
+    # target_rot = (2.92, -2.45, 1.94, -3.92)
 
 
     # target_trans = (-0.0536, -.00852, -.1382)
@@ -95,7 +95,7 @@ if __name__ == '__main__':
     # target_trans = (0, 0, 0)
     # angle = (0, pi/2, 0)
     # print(angle)
-    target_rot2 = tf.transformations.quaternion_from_euler(angle[0], angle[1], (angle[2] + pi))
+    target_rot2 = tf.transformations.quaternion_from_euler(angle[0], angle[1], angle[2]) #(angle[2] + pi))
     # target_rot = tf.transformations.quaternion_from_euler(-pi/2, 0, 0)
     goal_angle = tf.transformations.quaternion_from_euler(pi, -pi/2, 0)
     
@@ -108,6 +108,6 @@ if __name__ == '__main__':
     while not rospy.is_shutdown():
         object_tf.sendTransform((0, .5, .125), tuple(rot3), rospy.Time.now(), 'object_tf', 'world')
         target_tf.sendTransform(target_trans, target_rot2, rospy.Time.now(), 'target_tf', 'object_tf')
-        target_tf_goal.sendTransform((0.1, 0, 0), tuple(goal_angle), rospy.Time.now(), 'target_tf_goal', 'target_tf') # 'j2s7s300_link_7') # 'target_tf'
+        target_tf_goal.sendTransform((0.012, 0, 0), tuple(goal_angle), rospy.Time.now(), 'target_tf_goal', 'target_tf') # 'j2s7s300_link_7') # 'target_tf'
         goal_tf.sendTransform(tuple(translation), rotation, rospy.Time.now(), 'goal_tf', 'target_tf_goal')
         rate.sleep()
