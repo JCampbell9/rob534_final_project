@@ -49,7 +49,7 @@ class MoveRobot():
 		self.scene = moveit_commander.PlanningSceneInterface()
 		self.env = env
 		rospy.sleep(2)
-		
+
 
 		
 		# Define the planning group for the arm you are using
@@ -132,11 +132,13 @@ class MoveRobot():
 		self.move_group.set_pose_target(pose_goal)
 		self.move_group.set_planning_time(1)
 		rospy.sleep(2)
-		print(self.move_group.go(wait=True))
+		result = self.move_group.go(wait=True)
 		self.move_group.stop()
 
 		self.move_group.clear_pose_targets()
 		rospy.sleep(2)
+		return result
+		
 
 	def move_gripper(self, cmd):
 		if cmd == "Close":
@@ -199,10 +201,10 @@ class MoveRobot():
 			cyl_pose = PoseStamped()
 			cyl_pose.header.frame_id = self.robot.get_planning_frame()
 			cyl_pose.pose.position.x = 0.0
-			cyl_pose.pose.position.y = 0.5
+			cyl_pose.pose.position.y = 0.25
 			cyl_pose.pose.position.z = 0.125
 			self.scene.add_cylinder('cylinder', cyl_pose, .25, 0.025)
-			obj_pose = (0, .5, .125/2)
+			# obj_pose = (0, .25, .125/2)
 
 		elif self.env == 1:
 
@@ -212,7 +214,7 @@ class MoveRobot():
 			cyl_pose.pose.position.y = 0.5
 			cyl_pose.pose.position.z = 0.125
 			self.scene.add_cylinder('cylinder', cyl_pose, .25, 0.025)
-			obj_pose = (0, .5, .125/2)
+			# obj_pose = (0, .5, .125/2)
 			# go around or over wall
 			wall_pose = PoseStamped()
 			wall_pose.header.frame_id = self.robot.get_planning_frame()
@@ -228,7 +230,7 @@ class MoveRobot():
 			cyl_pose.pose.position.x = 0.0
 			cyl_pose.pose.position.y = 0.75
 			cyl_pose.pose.position.z = 0.125
-			obj_pose = (0, .75, .125/2)
+			# obj_pose = (0, .75, .125/2)
 			self.scene.add_cylinder('cylinder', cyl_pose, .25, 0.025)
 
 			wallL_pose = PoseStamped()
@@ -263,17 +265,13 @@ class MoveRobot():
 			except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
 				continue  # if it fails try again
 
-		# dir_path = os.path.dirname(os.path.realpath(__file__))
-		# file = open(dir_path + "/object_position.csv", "a")
-		# wr = csv.writer(file, dialect='excel')
-
-		# wr.writerow((translation + rotation))
-		# file.close()
 
 		# print('translation: {0} \n rotation: {1}'.format(translation, rotation))
 		# Pick planner 
-		
-		self.set_planner_type("RRT")
+
+		planner = "RRT"
+		# planner = "PRM*"
+		self.set_planner_type(planner)
 		# # self.set_planner_type("PRM*")
 
 		# # self.go_to_goal()
@@ -285,7 +283,41 @@ class MoveRobot():
 		pose = [translation[0], translation[1], translation[2], angles[0], angles[1], angles[2]]
 		# # pose = [translation[0], translation[1], translation[2], rotation[0], rotation[1], rotation[2], rotation[3]]
 		# # print(pose)
-		self.go_to_goal(pose)
+		timer_start = time.clock()
+		result = self.go_to_goal(pose)
+
+		run_time = time.clock() - timer_start
+
+		# dir_path = os.path.dirname(os.path.realpath(__file__))
+		# file = open(dir_path + "/results.csv", "a")
+		# wr = csv.writer(file, dialect='excel')
+
+		# pose_num = 10
+
+		# wr.writerow(["cylinder", planner, pose_num, self.env, result, run_time]) # [object, planner, pose, env, fail/success, time]
+		# file.close()
+
+
+		time.sleep(3)
+		home = [270 * pi / 180, 163 * pi / 180, 0 * pi / 180, 43 * pi / 180, 265 * pi / 180, 257 * pi / 180, 280 * pi / 180]
+		self.go_to_joint_state(home)
+
+
+
+		planner = "PRM*"
+		self.set_planner_type(planner)
+
+		timer_start = time.clock()
+		result = self.go_to_goal(pose)
+
+		run_time = time.clock() - timer_start
+
+		# wr.writerow(["cylinder", planner, pose_num, self.env, result, run_time]) # [object, planner, pose, env, fail/success, time]
+
+		# file.close()
+
+		time.sleep(3)
+		self.go_to_joint_state(home)
 
 	# 	# elif self.env == 1:
 		# self.go_to_goal([0.0, 0.5, 0.125, 270, 0, 270])
