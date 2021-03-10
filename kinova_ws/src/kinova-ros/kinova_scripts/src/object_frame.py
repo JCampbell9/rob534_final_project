@@ -106,6 +106,9 @@ if __name__ == '__main__':
     rate = rospy.Rate(10.0)
 
     while not rospy.is_shutdown():
+
+        
+
         object_tf.sendTransform((0, .5, .125), tuple(rot3), rospy.Time.now(), 'object_tf', 'world')
         target_tf.sendTransform(target_trans, target_rot2, rospy.Time.now(), 'target_tf', 'object_tf')
         target_tf_goal.sendTransform((0.012, 0, 0), tuple(goal_angle), rospy.Time.now(), 'target_tf_goal', 'target_tf') # 'j2s7s300_link_7') # 'target_tf'
