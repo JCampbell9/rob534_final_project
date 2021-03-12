@@ -12,31 +12,64 @@ import glob
 import sys
 
 
+class Frames():
+    def __init__(self):
+        rospy.init_node('object_frame_tf')
+
+        self.dir_path = os.path.dirname(os.path.realpath(__file__))
+
+        self.pose_list = []
+
+        self.enviroment = rospy.get_param('which_env')
+        self.pose_number = rospy.get_param('which_pose')
+        
+        ###################################################################################
+        # Creates frames for the object and target pose 
+        ###################################################################################
+        
+        self.listener = tf.TransformListener()
+
+        while True:
+            try:
+                self.translation, self.rotation = self.listener.lookupTransform('j2s7s300_link_7', 'j2s7s300_end_effector', rospy.Time())
+                break  # once the transform is obtained move on
+            except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
+                continue  # if it fails try again
+
+        self.rot3 = tf.transformations.quaternion_from_euler(-pi/2, 0, 0)
+    
+    
+    def read_poses(self):
+        with open(self.dir_path + 'pose.csv', 'r', newline='') as csvfile:
+            ofile = csv.reader(csvfile, delimiter=',')
+            next(ofile)
+
+            for row in ofile:
+                self.pose_list.append([float(i) for i in row])
+            
+                
+        
+    
+    def get_goal_pose(self):
+        pass
+
+    def publish_tfs(self):
+        pass
+
 
 
 if __name__ == '__main__':
 
-    ###################################################################################
-    # Creates frames for the object and target pose 
-    ###################################################################################
-
-    rospy.init_node('object_frame_tf')
-
-    directory = os.path.dirname(os.path.realpath(__file__))
-
-    listener = tf.TransformListener()
-
-    while True:
-        try:
-            translation, rotation = listener.lookupTransform('j2s7s300_link_7', 'j2s7s300_end_effector', rospy.Time())
-            print(translation)
-            break  # once the transform is obtained move on
-        except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
-            continue  # if it fails try again
-
-    
-    rot3 = tf.transformations.quaternion_from_euler(-pi/2, 0, 0)
     # print(rot3)
+
+    # dir_path = os.path.dirname(os.path.realpath(__file__))
+    # file = open(dir_path + "/results.csv", "r")
+    # wr = csv.writer(file, dialect='excel')
+
+    # pose_num = 10
+
+    # wr.writerow(["cylinder", planner, pose_num, self.env, result, run_time]) # [object, planner, pose, env, fail/success, time]
+    # file.close()
 
     # # pose 1
     # target_trans = (.11561, -0.06138, -0.02069)
