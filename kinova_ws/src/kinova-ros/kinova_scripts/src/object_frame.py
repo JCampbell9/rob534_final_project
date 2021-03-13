@@ -61,17 +61,23 @@ class Frames():
             
                 
     def get_goal_pose(self):
+
         self.enviroment = rospy.get_param('test_env')
         goal_pose = rospy.get_param('goal_pose')
+        if goal_pose == len(self.pose_list):
+            goal_pose = 0
+        # else:
+        rospy.logerr('pose number: {}'.format(goal_pose))
+        
         trans = self.pose_list[goal_pose][:3]
         target_rot = self.pose_list[goal_pose][3:]
-
+        rospy.logerr(self.pose_list[goal_pose])
         self.target_trans = [j/1000 for j in trans]
 
         angle = tf.transformations.euler_from_quaternion((target_rot[1], target_rot[2], target_rot[3], target_rot[0])) 
         self.target_rot2 = tf.transformations.quaternion_from_euler(angle[0], angle[1], angle[2])
 
-        if goal_pose == (len(self.pose_list) - 1):
+        if goal_pose >= (len(self.pose_list) - 1):
             rospy.set_param('ready_trig', 3)
         else:
             rospy.set_param('ready_trig', 1)

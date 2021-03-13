@@ -161,7 +161,7 @@ class MoveRobot():
 	def read_csv(self):
 		with open(self.dir_path + '/start_poses.csv', 'r') as csvfile:
 			ofile = csv.reader(csvfile, delimiter=',')
-			next(ofile)
+			# next(ofile)
 
 			for row in ofile:
 				self.start_poses.append([float(i) for i in row])
@@ -257,16 +257,16 @@ class MoveRobot():
 		file = open(dir_path + "/{0}_results.csv".format(self.object), "w")
 		wr = csv.writer(file, dialect='excel')
 
-		rospy.
 		
 		for _ in range(3):
-				
+			# rospy.logerr('in for loop')
+
 			while True:
 				self.ready = rospy.get_param('ready_trig')
 
 				if self.ready != 0:
 					time.sleep(.5)
-
+					# rospy.logerr('in if statement')
 					while True:
 						try:
 							translation, rotation = listener.lookupTransform('world', 'goal_tf', rospy.Time()) #('world', 'object_tf', rospy.Time())
@@ -274,12 +274,11 @@ class MoveRobot():
 							break  # once the transform is obtained move on
 						except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
 							continue  # if it fails try again
-					
 					angles = tf.transformations.euler_from_quaternion(rotation)
 					pose = [translation[0], translation[1], translation[2], angles[0], angles[1], angles[2]]
-
+					
 					for i in self.start_poses:
-
+						rospy.logerr('in the start loop {}'.format(i))
 						planner = "RRT"
 						self.set_planner_type(planner)
 
@@ -290,7 +289,7 @@ class MoveRobot():
 
 						wr.writerow([self.object, planner, self.pose_number, self.env, result, run_time]) # [object, planner, pose, env, fail/success, time]
 
-						time.sleep(3)
+						time.sleep(.5)
 						self.go_to_joint_state(i)
 
 						planner = "PRM*"
@@ -303,20 +302,22 @@ class MoveRobot():
 
 						wr.writerow([self.object, planner, self.pose_number, self.env, result, run_time]) # [object, planner, pose, env, fail/success, time]
 
-						time.sleep(3)
+						time.sleep(.5)
 						self.go_to_joint_state(i)
 
-						self.pose_number += 1
-						rospy.set_param('goal_pose', self.pose_number)
+						if rospy.get_param('goal_pose') == 3:
+							rospy.set_param('goal_pose', 0)
+						else:
+							self.pose_number += 1
+							rospy.set_param('goal_pose', self.pose_number)
 						rospy.set_param('ready_trig', 4)
 
-				if self.ready == 3:
+				if rospy.get_param('ready_trig') == 3:
 					break
-			
+			rospy.set_param('goal_pose', 0)
 			self.teardown_env()
 			self.env += 1
 			self.build_env()
-			rospy.set_param('goal_pose', 0)
 			rospy.set_param('test_env', self.env)
 			rospy.set_param('ready_trig', 0)
 
