@@ -34,24 +34,28 @@ import csv
 # move_group_python_interface_tutorial was used as reference
 
 class MoveRobot():
-	def __init__(self, env=0):
+	def __init__(self):
 		# Initialize moveit commander and ros node for moveit
 		moveit_commander.roscpp_initialize(sys.argv)
 
+		self.dir_path = os.path.dirname(os.path.realpath(__file__))
+
+
 		# Initializing node
 		rospy.init_node("move_kinova", anonymous=True)
-
+		self.start_poses = []
 		# Define robot using RobotCommander. Provided robot info such as
 		# kinematic model and current joint state
 		self.robot = moveit_commander.RobotCommander()
-
 		# Setting the world 
 		self.scene = moveit_commander.PlanningSceneInterface()
-		self.env = env
+		# self.env = env
+		self.object = rospy.get_param('test_object')
+		self.env = rospy.get_param('test_env')
+		self.pose_number = rospy.get_param('goal_pose')
+		self.ready = rospy.get_param('ready_trig')
 		rospy.sleep(2)
 
-
-		
 		# Define the planning group for the arm you are using
 		# You can easily look it up on rviz under the MotionPlanning tab
 		self.move_group = moveit_commander.MoveGroupCommander("arm")
@@ -84,7 +88,7 @@ class MoveRobot():
 
 		# self.joint_angles_service = rospy.Service('joint_angles', Joint_angles, self.joint_angles)
 		# self.new_pose_service = rospy.Service('new_pose', New_pose, self.new_pose)
-
+		# self.read_csv()
 		self.main()
 	
 	def set_planner_type(self, planner_name):
@@ -94,7 +98,6 @@ class MoveRobot():
 			self.move_group.set_planner_id("RRTstarkConfigDefault")
 		if planner_name == "PRM*":
 			self.move_group.set_planner_id("PRMstarkConfigDefault")
-
 
 	def go_to_joint_state(self, joint_state):
 		joint_goal = JointState()
@@ -139,7 +142,6 @@ class MoveRobot():
 		rospy.sleep(2)
 		return result
 		
-
 	def move_gripper(self, cmd):
 		if cmd == "Close":
 			self.move_gripper.set_named_target("Close")
@@ -156,66 +158,28 @@ class MoveRobot():
 		print(self.disp.trajectory)
 		self.disp_pub.publish(self.disp)
 
+	def read_csv(self):
+		with open(self.dir_path + '/start_poses.csv', 'r') as csvfile:
+			ofile = csv.reader(csvfile, delimiter=',')
+			next(ofile)
 
-	# def new_pose(self, request):
-	# 	self.main(0, request.pose)
+			for row in ofile:
+				self.start_poses.append([float(i) for i in row])
+
+	def build_env(self):
+
+		obj_pose = PoseStamped()
+		obj_pose.header.frame_id = self.robot.get_planning_frame()
+		obj_pose.pose.position.x = 0.0
+		obj_pose.pose.position.z = 0.125
 		
-	# 	return New_poseResponse(True)
-
-
-	# def joint_angles(self, request):
-	# 	"""calls the main() function giving it the desired joint angles"""
-	# 	self.main(1, request.angles)
-
-	# 	return Joint_anglesResponse(True)
-
-	# def main(self, trig, goal):
-
-	# 	# Set up path here
-
-	# 	# Pick planner 
-	# 	self.set_planner_type("RRT")
-
-	# 	if trig == 1:
-	# 	# Draw a straight line in 90 deg
-	# 		rospy.loginfo('moving')
-	# 		joint_radians = goal[:7]  # angles for the arm
-	# 		finger_radians = goal[7:] # angles for the gripper this code currently doesn't work
-
-	# 		self.go_to_joint_state(joint_radians)
-		
-	# 	elif trig == 0:
-	# 		self.go_to_goal(list(goal))
-
-	def main(self):
-		table_pose = PoseStamped()
-		table_pose.header.frame_id = self.robot.get_planning_frame()
-		table_pose.pose.position.x = 0.
-		table_pose.pose.position.y = 0.
-		table_pose.pose.position.z = -0.0125
-		self.scene.add_box('table', table_pose, (1, 3, 0.025))
-
-
 
 		if self.env == 0:
-			cyl_pose = PoseStamped()
-			cyl_pose.header.frame_id = self.robot.get_planning_frame()
-			cyl_pose.pose.position.x = 0.0
-			cyl_pose.pose.position.y = 0.25
-			cyl_pose.pose.position.z = 0.125
-			self.scene.add_cylinder('cylinder', cyl_pose, .25, 0.025)
-			# obj_pose = (0, .25, .125/2)
+			obj_pose.pose.position.y = 0.25
 
 		elif self.env == 1:
+			obj_pose.pose.position.y = 0.5
 
-			cyl_pose = PoseStamped()
-			cyl_pose.header.frame_id = self.robot.get_planning_frame()
-			cyl_pose.pose.position.x = 0.0
-			cyl_pose.pose.position.y = 0.5
-			cyl_pose.pose.position.z = 0.125
-			self.scene.add_cylinder('cylinder', cyl_pose, .25, 0.025)
-			# obj_pose = (0, .5, .125/2)
-			# go around or over wall
 			wall_pose = PoseStamped()
 			wall_pose.header.frame_id = self.robot.get_planning_frame()
 			wall_pose.pose.position.x = 0.3
@@ -224,15 +188,8 @@ class MoveRobot():
 			self.scene.add_box('wall', wall_pose, (1, 0.025, .5))
 
 		elif self.env == 2:
-
-			cyl_pose = PoseStamped()
-			cyl_pose.header.frame_id = self.robot.get_planning_frame()
-			cyl_pose.pose.position.x = 0.0
-			cyl_pose.pose.position.y = 0.75
-			cyl_pose.pose.position.z = 0.125
-			# obj_pose = (0, .75, .125/2)
-			self.scene.add_cylinder('cylinder', cyl_pose, .25, 0.025)
-
+			obj_pose.pose.position.y = 0.75
+	
 			wallL_pose = PoseStamped()
 			wallL_pose.header.frame_id = self.robot.get_planning_frame()
 			wallL_pose.pose.position.x = -0.45
@@ -253,94 +210,126 @@ class MoveRobot():
 			wallT_pose.pose.position.y = 0.5
 			wallT_pose.pose.position.z = 1.
 			self.scene.add_box('wallT', wallT_pose, (0.5, 0.025, 1))
+
+		if self.object == 'Cyl':
+			self.scene.add_cylinder(self.object, obj_pose, .25, 0.025)
 		
+		elif self.object == 'Cube':
+			self.scene.add_cylinder(self.object, obj_pose, (.05, .05, .25))
+
+	def teardown_env(self):
+		if self.env == 0:
+			self.scene.remove_world_object(self.object)
+		
+		elif self.env == 1:
+			self.scene.remove_world_object(self.object)
+			self.scene.remove_world_object('wall')
+		
+		elif self.env == 2:
+			self.scene.remove_world_object(self.object)
+			self.scene.remove_world_object('wallL')
+			self.scene.remove_world_object('wallR')
+			self.scene.remove_world_object('WallT')
+
+	def main(self):
+
+		self.read_csv()
+
+		table_pose = PoseStamped()
+		table_pose.header.frame_id = self.robot.get_planning_frame()
+		table_pose.pose.position.x = 0.
+		table_pose.pose.position.y = 0.
+		table_pose.pose.position.z = -0.0125
+		self.scene.add_box('table', table_pose, (1, 3, 0.025))
+		self.build_env()
+
+
+
 		# Set up path here
 		listener = tf.TransformListener()
-
-		while True:
-			try:
-				translation, rotation = listener.lookupTransform('world', 'goal_tf', rospy.Time()) #('world', 'object_tf', rospy.Time())
-				print(translation)
-				break  # once the transform is obtained move on
-			except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
-				continue  # if it fails try again
 
 
 		# print('translation: {0} \n rotation: {1}'.format(translation, rotation))
 		# Pick planner 
-
-		planner = "RRT"
-		# planner = "PRM*"
-		self.set_planner_type(planner)
-		# # self.set_planner_type("PRM*")
-
-		# # self.go_to_goal()
-		angles = tf.transformations.euler_from_quaternion(rotation)
-		# print(angles)
-
-
-		# # if self.env == 0:
-		pose = [translation[0], translation[1], translation[2], angles[0], angles[1], angles[2]]
-		# # pose = [translation[0], translation[1], translation[2], rotation[0], rotation[1], rotation[2], rotation[3]]
-		# # print(pose)
-		timer_start = time.clock()
-		result = self.go_to_goal(pose)
-
-		run_time = time.clock() - timer_start
-
-		# dir_path = os.path.dirname(os.path.realpath(__file__))
-		# file = open(dir_path + "/results.csv", "a")
-		# wr = csv.writer(file, dialect='excel')
-
-		# pose_num = 10
-
-		# wr.writerow(["cylinder", planner, pose_num, self.env, result, run_time]) # [object, planner, pose, env, fail/success, time]
-		# file.close()
-
-
-		time.sleep(3)
 		home = [270 * pi / 180, 163 * pi / 180, 0 * pi / 180, 43 * pi / 180, 265 * pi / 180, 257 * pi / 180, 280 * pi / 180]
-		self.go_to_joint_state(home)
 
+		dir_path = os.path.dirname(os.path.realpath(__file__))
+		file = open(dir_path + "/{0}_results.csv".format(self.object), "w")
+		wr = csv.writer(file, dialect='excel')
 
+		rospy.
+		
+		for _ in range(3):
+				
+			while True:
+				self.ready = rospy.get_param('ready_trig')
 
-		planner = "PRM*"
-		self.set_planner_type(planner)
+				if self.ready != 0:
+					time.sleep(.5)
 
-		timer_start = time.clock()
-		result = self.go_to_goal(pose)
+					while True:
+						try:
+							translation, rotation = listener.lookupTransform('world', 'goal_tf', rospy.Time()) #('world', 'object_tf', rospy.Time())
+							print(translation)
+							break  # once the transform is obtained move on
+						except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
+							continue  # if it fails try again
+					
+					angles = tf.transformations.euler_from_quaternion(rotation)
+					pose = [translation[0], translation[1], translation[2], angles[0], angles[1], angles[2]]
 
-		run_time = time.clock() - timer_start
+					for i in self.start_poses:
 
-		# wr.writerow(["cylinder", planner, pose_num, self.env, result, run_time]) # [object, planner, pose, env, fail/success, time]
+						planner = "RRT"
+						self.set_planner_type(planner)
 
-		# file.close()
+						timer_start = time.clock()
+						result = self.go_to_goal(pose)
+						print("ran{}".format(self.pose_number))
+						run_time = time.clock() - timer_start
 
-		time.sleep(3)
-		self.go_to_joint_state(home)
+						wr.writerow([self.object, planner, self.pose_number, self.env, result, run_time]) # [object, planner, pose, env, fail/success, time]
 
-	# 	# elif self.env == 1:
-		# self.go_to_goal([0.0, 0.5, 0.125, 270, 0, 270])
+						time.sleep(3)
+						self.go_to_joint_state(i)
+
+						planner = "PRM*"
+						self.set_planner_type(planner)
+
+						timer_start = time.clock()
+						result = self.go_to_goal(pose)
+
+						run_time = time.clock() - timer_start
+
+						wr.writerow([self.object, planner, self.pose_number, self.env, result, run_time]) # [object, planner, pose, env, fail/success, time]
+
+						time.sleep(3)
+						self.go_to_joint_state(i)
+
+						self.pose_number += 1
+						rospy.set_param('goal_pose', self.pose_number)
+						rospy.set_param('ready_trig', 4)
+
+				if self.ready == 3:
+					break
 			
-	# 	# elif self.env == 2:
-	# 	# 	self.go_to_goal([0.0, 0.75, 0.125, 270, 0, 295])
+			self.teardown_env()
+			self.env += 1
+			self.build_env()
+			rospy.set_param('goal_pose', 0)
+			rospy.set_param('test_env', self.env)
+			rospy.set_param('ready_trig', 0)
 
-
-	# 	# Draw a straight line in 90 deg
-	# 	# env 2
-	# 	# self.go_to_goal([0.0, 0.5, 0.125, 270, 0, 270])
-
-	# 	# env 3
-	# 	# self.go_to_goal([0.0, 0.75, 0.125, 270, 0, 295])		
+		file.close()
 
 
 
 
 if __name__ == '__main__':
 	
-    world = sys.argv[-1]
+    # world = sys.argv[-1]
     # print(" \n\n  env: {0} \n\n".format(world))
 
-    MoveRobot(env=int(world))
+    MoveRobot()
 	# rospy.spin()
 

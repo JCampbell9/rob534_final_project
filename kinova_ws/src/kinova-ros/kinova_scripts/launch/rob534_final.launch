@@ -7,7 +7,9 @@
     
     <node pkg="kinova_scripts" name="move_kinova" type="kinova_path_planning.py" />
 
-    <param name="test_env" type="string" value="$(arg env)" />
+    <param name="test_env" type="int" value="$(arg env)" />
     <param name="test_object" type="string" value="$(arg object)" />
+    <param name="goal_pose" type="int" value="0" />
+    <param name="ready_trig" type="int" value="0" />
 
 </launch>
