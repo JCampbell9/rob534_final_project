@@ -64,7 +64,7 @@ class Frames():
 
         self.enviroment = rospy.get_param('test_env')
         goal_pose = rospy.get_param('goal_pose')
-        if goal_pose == len(self.pose_list):
+        if goal_pose >= len(self.pose_list):
             goal_pose = 0
         # else:
         rospy.logerr('pose number: {}'.format(goal_pose))
@@ -79,6 +79,7 @@ class Frames():
 
         if goal_pose >= (len(self.pose_list) - 1):
             rospy.set_param('ready_trig', 3)
+            rospy.logerr('set trigger to 3')
         else:
             rospy.set_param('ready_trig', 1)
 

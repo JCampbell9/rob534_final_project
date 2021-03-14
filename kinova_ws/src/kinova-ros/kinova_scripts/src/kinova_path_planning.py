@@ -208,7 +208,7 @@ class MoveRobot():
 			wallT_pose.header.frame_id = self.robot.get_planning_frame()
 			wallT_pose.pose.position.x = 0.0
 			wallT_pose.pose.position.y = 0.5
-			wallT_pose.pose.position.z = 1.
+			wallT_pose.pose.position.z = 1.0
 			self.scene.add_box('wallT', wallT_pose, (0.5, 0.025, 1))
 
 		if self.object == 'Cyl':
@@ -277,8 +277,9 @@ class MoveRobot():
 					angles = tf.transformations.euler_from_quaternion(rotation)
 					pose = [translation[0], translation[1], translation[2], angles[0], angles[1], angles[2]]
 					
-					for i in self.start_poses:
-						rospy.logerr('in the start loop {}'.format(i))
+					for i, start_ang in enumerate(self.start_poses):
+						self.pose_number = rospy.get_param('goal_pose')
+						rospy.logerr('in the start loop {}'.format(start_ang))
 						planner = "RRT"
 						self.set_planner_type(planner)
 
@@ -287,10 +288,10 @@ class MoveRobot():
 						print("ran{}".format(self.pose_number))
 						run_time = time.clock() - timer_start
 
-						wr.writerow([self.object, planner, self.pose_number, self.env, result, run_time]) # [object, planner, pose, env, fail/success, time]
+						wr.writerow([self.object, planner, i, self.pose_number, self.env, result, run_time]) # [object, planner, start_pose, pose, env, fail/success, time]
 
 						time.sleep(.5)
-						self.go_to_joint_state(i)
+						self.go_to_joint_state(start_ang)
 
 						planner = "PRM*"
 						self.set_planner_type(planner)
@@ -300,17 +301,24 @@ class MoveRobot():
 
 						run_time = time.clock() - timer_start
 
-						wr.writerow([self.object, planner, self.pose_number, self.env, result, run_time]) # [object, planner, pose, env, fail/success, time]
+						wr.writerow([self.object, planner, i, self.pose_number, self.env, result, run_time]) # [object, planner, pose, env, fail/success, time]
 
 						time.sleep(.5)
-						self.go_to_joint_state(i)
-
-						if rospy.get_param('goal_pose') == 3:
-							rospy.set_param('goal_pose', 0)
+						if len(self.start_poses) == 1:
+							self.go_to_joint_state(start_ang)
+						elif start_ang == self.start_poses[-1]:
+							self.go_to_joint_state(self.start_poses[0])
 						else:
-							self.pose_number += 1
-							rospy.set_param('goal_pose', self.pose_number)
-						rospy.set_param('ready_trig', 4)
+							self.go_to_joint_state(self.start_poses[i+1])
+
+					if rospy.get_param('ready_trig') == 3:
+						rospy.set_param('goal_pose', 0)
+						break
+					else:
+						self.pose_number += 1
+						rospy.set_param('goal_pose', self.pose_number)
+					
+					rospy.set_param('ready_trig', 4)
 
 				if rospy.get_param('ready_trig') == 3:
 					break
@@ -319,7 +327,7 @@ class MoveRobot():
 			self.env += 1
 			self.build_env()
 			rospy.set_param('test_env', self.env)
-			rospy.set_param('ready_trig', 0)
+			rospy.set_param('ready_trig', 4)
 
 		file.close()
 
