@@ -56,6 +56,9 @@ class MoveRobot():
 		self.ready = rospy.get_param('ready_trig')
 		rospy.sleep(2)
 
+
+		self.prm_results = []
+		self.rrt_results = []
 		# Define the planning group for the arm you are using
 		# You can easily look it up on rviz under the MotionPlanning tab
 		self.move_group = moveit_commander.MoveGroupCommander("arm")
@@ -231,6 +234,20 @@ class MoveRobot():
 			self.scene.remove_world_object('wallR')
 			self.scene.remove_world_object('WallT')
 
+	def write_csv(self):
+		dir_path = os.path.dirname(os.path.realpath(__file__))
+		file = open(dir_path + "/{0}_results.csv".format(self.object), "w")
+		wr = csv.writer(file, dialect='excel')
+		
+		for i in self.rrt_results:
+			wr.writerow(i)
+		
+		for j in self.prm_results:
+			wr.writerow(j)
+		
+		file.close()
+
+
 	def main(self):
 
 		self.read_csv()
@@ -253,10 +270,9 @@ class MoveRobot():
 		# Pick planner 
 		home = [270 * pi / 180, 163 * pi / 180, 0 * pi / 180, 43 * pi / 180, 265 * pi / 180, 257 * pi / 180, 280 * pi / 180]
 
-		dir_path = os.path.dirname(os.path.realpath(__file__))
-		file = open(dir_path + "/{0}_results.csv".format(self.object), "w")
-		wr = csv.writer(file, dialect='excel')
-
+		# dir_path = os.path.dirname(os.path.realpath(__file__))
+		# file = open(dir_path + "/{0}_results.csv".format(self.object), "w")
+		# wr = csv.writer(file, dialect='excel')
 		
 		for _ in range(3):
 			# rospy.logerr('in for loop')
@@ -288,7 +304,8 @@ class MoveRobot():
 						print("ran{}".format(self.pose_number))
 						run_time = time.clock() - timer_start
 
-						wr.writerow([self.object, planner, i, self.pose_number, self.env, result, run_time]) # [object, planner, start_pose, pose, env, fail/success, time]
+						self.rrt_results.append([self.object, planner, i, self.pose_number, self.env, result, run_time])
+						# wr.writerow([self.object, planner, i, self.pose_number, self.env, result, run_time]) # [object, planner, start_pose, pose, env, fail/success, time]
 
 						time.sleep(.5)
 						self.go_to_joint_state(start_ang)
@@ -301,7 +318,8 @@ class MoveRobot():
 
 						run_time = time.clock() - timer_start
 
-						wr.writerow([self.object, planner, i, self.pose_number, self.env, result, run_time]) # [object, planner, pose, env, fail/success, time]
+						self.prm_results.append([self.object, planner, i, self.pose_number, self.env, result, run_time])
+						# wr.writerow([self.object, planner, i, self.pose_number, self.env, result, run_time]) # [object, planner, pose, env, fail/success, time]
 
 						time.sleep(.5)
 						if len(self.start_poses) == 1:
@@ -329,7 +347,9 @@ class MoveRobot():
 			rospy.set_param('test_env', self.env)
 			rospy.set_param('ready_trig', 4)
 
-		file.close()
+		# file.close()
+
+		self.write_csv()
 
 
 
