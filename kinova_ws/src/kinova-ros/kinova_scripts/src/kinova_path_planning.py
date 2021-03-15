@@ -108,12 +108,13 @@ class MoveRobot():
 		self.move_group.set_joint_value_target(joint_goal.position)
 
 		self.plan = self.move_group.plan()
-		self.move_group.go(wait=True)
+		result = self.move_group.go(wait=True)
 		self.move_group.execute(self.plan, wait=True)
 
 		self.move_group.stop()
 		self.move_group.clear_pose_targets()
 		rospy.sleep(2)
+		return(result)
 
 	def go_to_goal(self, ee_pose):
 		pose_goal = geometry_msgs.msg.Pose()
@@ -162,7 +163,7 @@ class MoveRobot():
 		self.disp_pub.publish(self.disp)
 
 	def read_csv(self):
-		with open(self.dir_path + '/start_poses.csv', 'r') as csvfile:
+		with open(self.dir_path + '/start_poses_1.csv', 'r') as csvfile:
 			ofile = csv.reader(csvfile, delimiter=',')
 			# next(ofile)
 
@@ -218,7 +219,7 @@ class MoveRobot():
 			self.scene.add_cylinder(self.object, obj_pose, .25, 0.025)
 		
 		elif self.object == 'Cube':
-			self.scene.add_cylinder(self.object, obj_pose, (.05, .05, .25))
+			self.scene.add_box(self.object, obj_pose, (.05, .05, .25))
 
 	def teardown_env(self):
 		if self.env == 0:
@@ -236,9 +237,9 @@ class MoveRobot():
 
 	def write_csv(self):
 		dir_path = os.path.dirname(os.path.realpath(__file__))
-		file = open(dir_path + "/{0}_results.csv".format(self.object), "w")
+		file = open(dir_path + "/{0}_results_redo.csv".format(self.object), "w")
 		wr = csv.writer(file, dialect='excel')
-		
+		wr.writerow(['obj', 'planner', 'starting_pose', 'goal_pose', 'env', 'result', 'run_time', 'started from start_pose'])  # [self.object, planner, i, self.pose_number, self.env, result, run_time]
 		for i in self.rrt_results:
 			wr.writerow(i)
 		
@@ -274,7 +275,7 @@ class MoveRobot():
 		# file = open(dir_path + "/{0}_results.csv".format(self.object), "w")
 		# wr = csv.writer(file, dialect='excel')
 		
-		for _ in range(3):
+		for _ in range(3-self.env):
 			# rospy.logerr('in for loop')
 
 			while True:
@@ -292,23 +293,24 @@ class MoveRobot():
 							continue  # if it fails try again
 					angles = tf.transformations.euler_from_quaternion(rotation)
 					pose = [translation[0], translation[1], translation[2], angles[0], angles[1], angles[2]]
-					
+					made_it_to_start = True
 					for i, start_ang in enumerate(self.start_poses):
 						self.pose_number = rospy.get_param('goal_pose')
 						rospy.logerr('in the start loop {}'.format(start_ang))
 						planner = "RRT"
 						self.set_planner_type(planner)
-
+						made_it_to_start = self.go_to_joint_state(start_ang)
+						
 						timer_start = time.clock()
 						result = self.go_to_goal(pose)
 						print("ran{}".format(self.pose_number))
 						run_time = time.clock() - timer_start
 
-						self.rrt_results.append([self.object, planner, i, self.pose_number, self.env, result, run_time])
+						self.rrt_results.append([self.object, planner, i, self.pose_number, self.env, result, run_time, made_it_to_start])
 						# wr.writerow([self.object, planner, i, self.pose_number, self.env, result, run_time]) # [object, planner, start_pose, pose, env, fail/success, time]
 
-						time.sleep(.5)
-						self.go_to_joint_state(start_ang)
+						time.sleep(.01)
+						made_it_to_start = self.go_to_joint_state(start_ang)
 
 						planner = "PRM*"
 						self.set_planner_type(planner)
@@ -318,16 +320,16 @@ class MoveRobot():
 
 						run_time = time.clock() - timer_start
 
-						self.prm_results.append([self.object, planner, i, self.pose_number, self.env, result, run_time])
+						self.prm_results.append([self.object, planner, i, self.pose_number, self.env, result, run_time, made_it_to_start])
 						# wr.writerow([self.object, planner, i, self.pose_number, self.env, result, run_time]) # [object, planner, pose, env, fail/success, time]
 
-						time.sleep(.5)
-						if len(self.start_poses) == 1:
-							self.go_to_joint_state(start_ang)
-						elif start_ang == self.start_poses[-1]:
-							self.go_to_joint_state(self.start_poses[0])
-						else:
-							self.go_to_joint_state(self.start_poses[i+1])
+						time.sleep(.01)
+						# if len(self.start_poses) == 1:
+						# 	made_it_to_start = self.go_to_joint_state(start_ang)
+						# elif start_ang == self.start_poses[-1]:
+						# 	made_it_to_start = self.go_to_joint_state(self.start_poses[0])
+						# else:
+						# 	made_it_to_start = self.go_to_joint_state(self.start_poses[i+1])
 
 					if rospy.get_param('ready_trig') == 3:
 						rospy.set_param('goal_pose', 0)

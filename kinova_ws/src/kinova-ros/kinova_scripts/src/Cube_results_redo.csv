@@ -1,0 +1,3 @@
+obj,planner,starting_pose,goal_pose,env,result,run_time,started from start_pose
+Cube,RRT,0,0,2,True,0.7535729999999998,True
+Cube,PRM*,0,0,2,False,0.1599140000000001,True
