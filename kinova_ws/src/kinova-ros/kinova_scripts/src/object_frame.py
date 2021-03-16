@@ -52,7 +52,7 @@ class Frames():
     
     
     def read_poses(self):
-        with open(self.dir_path + '/{}_pose_data_1pose.csv'.format(self.object), 'r') as csvfile:
+        with open(self.dir_path + '/{}_pose_data.csv'.format(self.object), 'r') as csvfile:
             ofile = csv.reader(csvfile, delimiter=',')
             next(ofile)
 

@@ -163,7 +163,7 @@ class MoveRobot():
 		self.disp_pub.publish(self.disp)
 
 	def read_csv(self):
-		with open(self.dir_path + '/start_poses_1.csv', 'r') as csvfile:
+		with open(self.dir_path + '/start_poses.csv', 'r') as csvfile:
 			ofile = csv.reader(csvfile, delimiter=',')
 			# next(ofile)
 
@@ -237,7 +237,7 @@ class MoveRobot():
 
 	def write_csv(self):
 		dir_path = os.path.dirname(os.path.realpath(__file__))
-		file = open(dir_path + "/{0}_results_redo.csv".format(self.object), "w")
+		file = open(dir_path + "/{0}_results.csv".format(self.object), "w")
 		wr = csv.writer(file, dialect='excel')
 		wr.writerow(['obj', 'planner', 'starting_pose', 'goal_pose', 'env', 'result', 'run_time', 'started from start_pose'])  # [self.object, planner, i, self.pose_number, self.env, result, run_time]
 		for i in self.rrt_results:
@@ -333,6 +333,7 @@ class MoveRobot():
 
 					if rospy.get_param('ready_trig') == 3:
 						rospy.set_param('goal_pose', 0)
+						self.go_to_joint_state(self.start_poses[0])
 						break
 					else:
 						self.pose_number += 1
