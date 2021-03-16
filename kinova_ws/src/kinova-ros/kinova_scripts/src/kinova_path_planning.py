@@ -298,6 +298,7 @@ class MoveRobot():
 						self.pose_number = rospy.get_param('goal_pose')
 						rospy.logerr('in the start loop {}'.format(start_ang))
 						planner = "RRT"
+						# planner = "PRM*"
 						self.set_planner_type(planner)
 						made_it_to_start = self.go_to_joint_state(start_ang)
 						
